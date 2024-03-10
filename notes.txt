@@ -1,0 +1,9 @@
+SDO: 
+#kaicurtis@wellnessgames.demo
+#pw:XYH6mhj_qmb_hen8dfy
+
+
+# Logging into SFDX sfdx force:auth:web:login --alias wellnessgames
+# Site Guest User, StravaAuthHandlerSite
+#stravaauthhandlersite@00dal000002ofiream.org.force.com
+

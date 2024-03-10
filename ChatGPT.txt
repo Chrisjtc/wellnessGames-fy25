@@ -1,0 +1,65 @@
+Handling redirects in Salesforce, especially after an operation like the OAuth 2.0 flow, can be managed directly within the Apex controller. In the context of our Strava authentication scenario, where different outcomes might require redirecting to different Visualforce pages (e.g., success, no authorization given, required scope not given, or general error page), you can use the `PageReference` class to navigate the user accordingly. Below, I'll enhance the `StravaAuthCallbackController` with examples on how to handle these redirects.
+
+### Enhanced StravaAuthCallbackController with Redirects
+
+I'll add methods to redirect to different Visualforce pages based on the outcome of the Strava token exchange process. For illustration, let's assume the names of your Visualforce pages for different outcomes are:
+
+- `StravaAuthSuccess.page` for successful authentication.
+- `NoAuthGiven.page` for cases where the user did not authorize the app.
+- `RequiredScopeNotGiven.page` if the required scope was not given.
+- `GeneralError.page` for any other errors.
+
+```java
+public class StravaAuthCallbackController {
+    // Existing controller code
+
+    private void exchangeToken(String authCode) {
+        // Existing code for token exchange
+
+        try {
+            HttpResponse response = http.send(request);
+            if (response.getStatusCode() == 200) {
+                // Existing code for successful token exchange
+                
+                // Redirect to the success page
+                redirect('StravaAuthSuccess');
+            } else {
+                // Handle different types of errors based on response or other conditions
+                // This is a simplified example
+                if (response.getStatusCode() == 401) {
+                    // Unauthorized or no auth given
+                    redirect('NoAuthGiven');
+                } else {
+                    redirect('GeneralError');
+                }
+            }
+        } catch (Exception e) {
+            // Log the exception and redirect to the general error page
+            System.debug('Exception during token exchange: ' + e.getMessage());
+            redirect('GeneralError');
+        }
+    }
+
+    private void saveTokenDetails(String userId, String accessToken, String refreshToken) {
+        // Existing code for saving token details
+    }
+
+    private PageReference redirect(String pageName) {
+        PageReference pageRef = new PageReference('/apex/' + pageName);
+        pageRef.setRedirect(true);
+        return pageRef;
+    }
+
+    // Modify the constructor or other methods as needed to utilize redirect logic
+}
+```
+
+In this example, the `redirect` method takes a page name as input and returns a `PageReference` object that redirects the user to the specified Visualforce page. This method is called after handling the token exchange response or catching exceptions, ensuring that the user is directed to an appropriate page based on the outcome of the authentication process.
+
+**Key Points:**
+
+- Modify the constructor or the token exchange method to actually navigate to the new page. One way to trigger the redirect is to have a method in your controller that returns a `PageReference` and call this method after your logic concludes. For redirects to work after an action method in Visualforce, that method should return a `PageReference`.
+- Ensure you have created the necessary Visualforce pages (`StravaAuthSuccess`, `NoAuthGiven`, `RequiredScopeNotGiven`, `GeneralError`) to handle each scenario.
+- The approach shown above is a starting point. You might need to adjust the logic based on the exact requirements of your application, such as checking for specific error codes or messages from Strava's response to determine the reason for failure accurately.
+
+This method allows you to manage user flow more effectively across your Visualforce pages, enhancing the user experience by providing clear feedback and actions after attempting OAuth authentication with Strava.
